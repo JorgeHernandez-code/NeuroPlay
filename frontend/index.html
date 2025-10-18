@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Neuro Play — Demo</title>
+    <link rel="stylesheet" href="/frontend/Style.css" />
+</head>
+
+<body>
+    <header class="hero">
+        <h1>Impulsa tus ventas con <span>Neuro Play</span></h1>
+        <p>Convierte visitantes en clientes con un quiz interactivo y un asistente 24/7.</p>
+        <a href="#quiz" class="btn">Probar ahora</a>
+    </header>
+
+    <main class="container">
+        <!-- QUIZ -->
+        <section id="quiz" class="card">
+            <h2>Mini-quiz</h2>
+            <form id="quizForm">
+                <div class="grid">
+                    <label>
+                        ¿Qué necesitas hoy?
+                        <select name="q1" required>
+                            <option value="">Selecciona…</option>
+                            <option>Reparación</option>
+                            <option>Mantenimiento</option>
+                            <option>Upgrade</option>
+                            <option>Formateo</option>
+                        </select>
+                    </label>
+                    <label>
+                        ¿Con qué urgencia?
+                        <select name="q2" required>
+                            <option value="">Selecciona…</option>
+                            <option>Hoy</option>
+                            <option>Mañana</option>
+                            <option>Esta semana</option>
+                            <option>No urgente</option>
+                        </select>
+                    </label>
+                    <label>
+                        Presupuesto estimado
+                        <select name="q3" required>
+                            <option value="">Selecciona…</option>
+                            <option>Bajo</option>
+                            <option>Medio</option>
+                            <option>Alto</option>
+                        </select>
+                    </label>
+                    <label>
+                        Cuéntanos el detalle
+                        <input type="text" name="q4" placeholder="Ej: laptop no enciende" required />
+                    </label>
+                </div>
+
+                <h3>Tus datos</h3>
+                <div class="grid">
+                    <label>Nombre <input type="text" name="nombre" required /></label>
+                    <label>Email <input type="email" name="email" /></label>
+                    <label>WhatsApp <input type="text" name="whatsapp" /></label>
+                </div>
+                <button type="submit" class="btn">Enviar</button>
+            </form>
+
+            <div id="quizResult" class="result hidden"></div>
+        </section>
+
+        <!-- CHAT -->
+        <section id="chat" class="card hidden">
+            <h2>Asistente IA</h2>
+            <div id="chatBox" class="chatbox"></div>
+            <form id="chatForm" class="chatform">
+                <input type="text" id="chatInput" placeholder="Escribe tu pregunta…" required />
+                <button class="btn" type="submit">Enviar</button>
+            </form>
+        </section>
+
+        <!-- LEADS -->
+        <section id="leads" class="card">
+            <h2>Leads recientes</h2>
+            <button id="refreshLeads" class="btn btn-small">Actualizar</button>
+            <table id="leadsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Puntaje</th>
+                        <th>Estado</th>
+                        <th>Creado</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer class="footer">
+        Neuro Play — MVP demo
+    </footer>
+
+    <script>
+        window.NEURO_API = "http://127.0.0.1:8000";
+    </script>
+    <script src="/frontend/app.js"></script>
+</body>
+
+</html>
