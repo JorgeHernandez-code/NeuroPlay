@@ -102,7 +102,11 @@
     </footer>
 
     <script>
-        window.NEURO_API = "http://127.0.0.1:8000";
+        // When served by the FastAPI backend this resolves to the same origin.
+        // Override by setting ?api=http://host:port in the URL if needed.
+        const params = new URLSearchParams(location.search);
+        window.NEURO_API = params.get("api")
+            || (location.protocol.startsWith("http") ? location.origin : "http://127.0.0.1:8000");
     </script>
     <script src="/frontend/app.js"></script>
 </body>

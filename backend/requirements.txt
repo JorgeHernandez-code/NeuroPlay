@@ -1,6 +1,8 @@
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
 SQLAlchemy==2.0.32
-pyodbc==5.1.0
 python-dotenv==1.0.1
-pydantic==2.8.2
+pydantic[email]==2.8.2
+
+# Optional: only needed if you point DATABASE_URL at SQL Server
+# pyodbc==5.1.0

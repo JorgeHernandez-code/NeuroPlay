@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# Env / secrets
+.env
+backend/.env
+
+# Local database
+*.db
+*.sqlite3
+backend/neuroplay.db
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

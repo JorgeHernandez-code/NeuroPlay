@@ -6,9 +6,22 @@ const $ = (sel) => document.querySelector(sel);
 const el = (tag, cls, txt) => {
     const x = document.createElement(tag);
     if (cls) x.className = cls;
-    if (txt) x.textContent = txt;
+    if (txt !== undefined && txt !== null) x.textContent = txt;
     return x;
 };
+
+async function apiFetch(path, options) {
+    const res = await fetch(`${API}${path}`, options);
+    if (!res.ok) {
+        let detail = res.statusText;
+        try {
+            const body = await res.json();
+            detail = body.detail || JSON.stringify(body);
+        } catch (_) { /* ignore */ }
+        throw new Error(`${res.status}: ${detail}`);
+    }
+    return res.json();
+}
 
 // QUIZ SUBMIT
 $("#quizForm").addEventListener("submit", async (e) => {
@@ -20,36 +33,40 @@ $("#quizForm").addEventListener("submit", async (e) => {
         whatsapp: fd.get("whatsapp") || null,
         fuente: "web",
         respuestas: [
-            { pregunta: "Qué necesitas hoy", respuesta: fd.get("q1") },
+            { pregunta: "Que necesitas hoy", respuesta: fd.get("q1") },
             { pregunta: "Urgencia", respuesta: fd.get("q2") },
             { pregunta: "Presupuesto", respuesta: fd.get("q3") },
             { pregunta: "Detalle", respuesta: fd.get("q4") },
         ],
     };
 
-    const res = await fetch(`${API}/api/quiz/submit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-
     const r = $("#quizResult");
     r.classList.remove("hidden");
-    r.innerHTML = `<strong>¡Listo ${payload.nombre}!</strong> Puntaje: <b>${data.puntaje}</b> — Estado: <b>${data.estado}</b>.`;
-    CURRENT_LEAD_ID = data.lead_id;
+    r.textContent = "Enviando…";
 
-    // mostrar chat
-    $("#chat").classList.remove("hidden");
-    pushMsg("out", "¡Hola! Soy tu asistente 24/7. Pregúntame horarios, garantía, domicilio o agenda una cita.");
+    try {
+        const data = await apiFetch("/api/quiz/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+
+        r.innerHTML = `<strong>¡Listo ${payload.nombre}!</strong> Puntaje: <b>${data.puntaje}</b> — Estado: <b>${data.estado}</b>.`;
+        CURRENT_LEAD_ID = data.lead_id;
+
+        $("#chat").classList.remove("hidden");
+        $("#chatBox").innerHTML = "";
+        pushMsg("out", "¡Hola! Soy tu asistente 24/7. Pregúntame por horarios, garantía, servicio a domicilio o agenda una cita.");
+        loadLeads();
+    } catch (err) {
+        r.textContent = `No se pudo enviar el quiz (${err.message}).`;
+    }
 });
 
 // CHAT
 function pushMsg(dir, text) {
     const box = $("#chatBox");
-    const m = el("div", `msg ${dir}`);
-    m.textContent = text;
-    box.appendChild(m);
+    box.appendChild(el("div", `msg ${dir}`, text));
     box.scrollTop = box.scrollHeight;
 }
 
@@ -60,30 +77,36 @@ $("#chatForm").addEventListener("submit", async (e) => {
     $("#chatInput").value = "";
     pushMsg("in", txt);
 
-    const res = await fetch(`${API}/api/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lead_id: CURRENT_LEAD_ID, mensaje: txt }),
-    });
-    const data = await res.json();
-    pushMsg("out", data.reply);
+    try {
+        const data = await apiFetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ lead_id: CURRENT_LEAD_ID, mensaje: txt }),
+        });
+        pushMsg("out", data.reply);
+    } catch (err) {
+        pushMsg("out", `Error: ${err.message}`);
+    }
 });
 
 // LEADS
 async function loadLeads() {
-    const res = await fetch(`${API}/api/leads`);
-    const list = await res.json();
     const tbody = $("#leadsTable tbody");
-    tbody.innerHTML = "";
-    list.forEach((l) => {
-        const tr = el("tr");
-        tr.appendChild(el("td", "", l.id));
-        tr.appendChild(el("td", "", l.nombre));
-        tr.appendChild(el("td", "", l.puntaje));
-        tr.appendChild(el("td", "", l.estado));
-        tr.appendChild(el("td", "", "")); // CreatedAt lo omitimos del schema simplificado
-        tbody.appendChild(tr);
-    });
+    try {
+        const list = await apiFetch("/api/leads");
+        tbody.innerHTML = "";
+        list.forEach((l) => {
+            const tr = el("tr");
+            tr.appendChild(el("td", "", l.id));
+            tr.appendChild(el("td", "", l.nombre));
+            tr.appendChild(el("td", "", l.puntaje));
+            tr.appendChild(el("td", "", l.estado));
+            tr.appendChild(el("td", "", l.creado ? new Date(l.creado).toLocaleString() : ""));
+            tbody.appendChild(tr);
+        });
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5">No se pudieron cargar los leads (${err.message}).</td></tr>`;
+    }
 }
 $("#refreshLeads").addEventListener("click", loadLeads);
 loadLeads();
